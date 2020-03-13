@@ -604,5 +604,138 @@
 			-fno-builtin参数用于关闭GCC内置函数的功能
 			gcc提供了很多内置函数(Built-in function), 他会把一些常用的C库函数
 			替换成编译器的内置函数，已达到优化的目的。
-
+			
+第11课 调试器GDB-上
+1，gdb
+	能够跟踪程序的执行，也能恢复程序崩溃前的状态
 	
+2，gdb的常规应用
+	自定义程序的启动方式(指定影响程序运行的参数)
+	设置条件断点(在条件满足时暂停程序的执行)
+	回溯检查导致程序异常结束的原因(Core Dump)
+	动态改变程序执行流(定义问题的辅助方式)
+	
+3，gdb的启动方式
+	直接启动
+		gdb
+		gdb test.out
+		gdb test.out core
+	动态连接
+		gdb test.out pid
+	
+4,gdb应用示例一
+		gdb						// 启动
+	(gdb) file test.out			// 载入目标程序
+	(gdb) set args arg1 arg2	// 设置命令行参数
+	(gdb) run					// 执行目标程序
+	
+	示例二
+		gdb				// 启动
+	(gdb) attach pid	// 链接到目标程序，链接成功后目标进程将停止
+	(gdb) continue		// 恢复执行
+	
+5，使用gdb进行断点调试
+	断点类型
+		软件断点：由非法指令异常实现(软件实现)
+		硬件断点：由硬件特性实现(数量有限)
+		数据断点：由硬件特性实现(数量有限)
+	
+	软件断点的相关操作
+		通过函数名设置断点
+			break func_name [ if var = value ]
+			tbreak func_name [ if var = value ]
+		通过文件名行号设置断点
+			break file_name:line_num [ if var = value ]
+			tbreak file_name:line_num [ if var = value ]
+		break设置永久有效断点，tbreak设置一次有效断点
+	
+		断点查看			info breakpoints
+		断点删除			delete 1 2 n
+						delete breakpoints
+		断点状态改变		enable 1 2 n
+						enable breakpoints
+						disable 1 2 n
+						disable breakpoints
+
+6，调试时的常用操作
+	变量查看				print name
+	变量设置				set var name=value
+	执行下一行代码		next
+	连续执行n行代码		next n
+	执行进入函数			step
+	强制当前函数返回		return [value]
+	运行至当前函数返回	finish
+	执行至目标行			until line
+	跳转执行				jump line
+	
+7，硬件断点及其应用
+	当代码位于只读存储器(flash)时，只能通过硬件断点调试
+	硬件断点需要硬件支持，数量有限
+	gdb中通过hbreak命令支持硬件断点
+	hbreak与break使用方式完全一致
+
+第12课 调试器gdb-下
+1，数据断点
+	gdb中支持数据断点的设置
+	watch命令用于监视变量是否被改变(本质为硬件断点)
+	watch命令的用法： watch var_name
+	
+2，gdb中的内存查看
+	gdb中可以检查任意内存区域中的数据
+	命令语法： x /Nuf expression
+		N - 需要打印的单元数
+		u - 每个单元的大小
+		f - 数据打印格式
+	示例： x /4bx 0x804a024
+	
+	x命令中参数 u 对应的单位
+		b	单字节
+		h	双字节
+		w	四字节
+		g	八字节
+	
+	gdb中的打印格式
+		x	十六进制
+		d	有符号十进制
+		u	无符号十进制
+		o	八进制
+		t	二进制
+		a	地址
+		c	字符
+		f	浮点数
+		
+3，函数调用栈的查看(backtrace和frame)
+	backtrace
+		查看函数调用的顺序(函数调用栈的信息)
+	frame N
+		切换到栈编号为N的上下文中
+	info frame
+		查看当前函数调用的栈帧信息
+		
+	什么时栈帧信息？
+			参数
+			返回地址
+	ebp -->
+			old ebp
+			寄存器信息
+			局部变量
+			其它数据信息
+	esp -->
+	
+4，深入info命令
+	info registers	查看当前寄存器的值
+	info args		查看当前函数参数的值
+	info locals		查看当前局部变量的值
+	info frame		查看当前栈帧的详细信息
+	info variables	查看程序中的变量符号
+	info functions	查看程序中的函数符号
+	
+5，一些调试中的小技巧
+	断点处自动打印		display /f expression
+						undisplay
+	查看程序中的符号		whatis
+						ptype
+	gdb中的代码查看		list
+						set listsize N
+	gdb中的Shell操作		shell cmd
+
